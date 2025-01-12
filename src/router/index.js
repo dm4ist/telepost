@@ -3,6 +3,7 @@ import Dashboard from '../views/Dashboard.vue'
 import CreateTemplate from '../views/CreateTemplate.vue'
 import CreatePost from '../views/CreatePost.vue'
 import ManageChannels from '../views/ManageChannels.vue'
+import EditChannel from '../views/EditChannel.vue'
 import Statistics from '../views/Statistics.vue'
 
 const routes = [
@@ -25,6 +26,11 @@ const routes = [
     path: '/channels',
     name: 'Channels',
     component: ManageChannels
+  },
+  {
+    path: '/channels/edit/:id',
+    name: 'EditChannel',
+    component: EditChannel
   },
   {
     path: '/statistics',
