@@ -1,7 +1,7 @@
 <template>
   <div class="create-post">
     <h2>Create New Post</h2>
-    <form @submit.prevent="createPost">
+    <form @submit.prevent="schedulePost">
       <select v-model="selectedTemplate" @change="loadTemplate" required>
         <option value="">Select a template</option>
         <option v-for="template in templates" :key="template.id" :value="template.id">
@@ -25,8 +25,13 @@
         </option>
       </select>
       <input type="datetime-local" v-model="scheduledTime" required>
-      <button type="submit">Schedule Post</button>
+      <div>
+        <button type="submit">Schedule Post</button>
+        <button type="button" @click="publishPost">Publish Now</button>
+      </div>
     </form>
+    <div v-if="error" class="error">{{ error }}</div>
+    <div v-if="success" class="success">{{ success }}</div>
   </div>
 </template>
 
@@ -42,8 +47,12 @@ export default {
       selectedTemplate: '',
       selectedChannel: '',
       currentTemplate: null,
-      postContent: {},
-      scheduledTime: ''
+      postContent: {
+        text: ''  // Ensure 'text' field is included
+      },
+      scheduledTime: '',
+      error: null,
+      success: null
     }
   },
   async mounted() {
@@ -61,7 +70,7 @@ export default {
   methods: {
     loadTemplate() {
       this.currentTemplate = this.templates.find(t => t.id === this.selectedTemplate);
-      this.postContent = {};
+      this.postContent = { text: '' };  // Reset postContent and include 'text' field
     },
     handleFileUpload(event, fieldName) {
       const file = event.target.files[0];
@@ -70,30 +79,66 @@ export default {
         file: file
       };
     },
-    async createPost() {
+    async schedulePost() {
+      this.error = null;
+      this.success = null;
       try {
-        const formData = new FormData();
-        for (const [key, value] of Object.entries(this.postContent)) {
-          if (value && value.file) {
-            formData.append(key, value.file);
-          } else {
-            formData.append(key, value);
-          }
-        }
-        formData.append('channel_id', this.selectedChannel);
-        formData.append('template_id', this.selectedTemplate);
-        formData.append('scheduled_time', this.scheduledTime);
+        const formData = {
+          channel_id: this.selectedChannel,
+          template_id: this.selectedTemplate,
+          content: this.postContent,
+          scheduled_time: this.scheduledTime
+        };
 
         await axios.post('http://localhost:5000/api/posts', formData, {
           headers: {
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'application/json'
           }
         });
+        this.success = 'Post scheduled successfully';
         this.$router.push('/posts');
       } catch (error) {
-        console.error('Error creating post:', error);
+        if (error.response && error.response.data) {
+          this.error = error.response.data.error;
+        } else {
+          this.error = error.message;
+        }
+      }
+    },
+    async publishPost() {
+      this.error = null;
+      this.success = null;
+      try {
+        const formData = {
+          channel_id: this.selectedChannel,
+          template_id: this.selectedTemplate,
+          content: this.postContent
+        };
+
+        await axios.post('http://localhost:5000/api/posts', formData, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        this.success = 'Post published successfully';
+        this.$router.push('/posts');
+      } catch (error) {
+        if (error.response && error.response.data) {
+          this.error = error.response.data.error;
+        } else {
+          this.error = error.message;
+        }
       }
     }
   }
 }
 </script>
+
+<style scoped>
+.error {
+  color: red;
+}
+.success {
+  color: green;
+}
+</style>
