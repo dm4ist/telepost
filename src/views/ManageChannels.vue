@@ -78,3 +78,25 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.manage-channels {
+  padding: 20px;
+}
+
+.manage-channels ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.manage-channels li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.manage-channels button {
+  display: inline-block;
+  margin-left: 10px;
+}
+</style>

@@ -87,6 +87,18 @@ def handle_channels():
         channels = Channel.query.all()
         return jsonify([{"id": c.id, "name": c.name, "chat_id": c.chat_id} for c in channels])
 
+@app.route('/api/channels/<int:id>', methods=['GET'])
+def get_channel(id):
+    channel = Channel.query.get(id)
+    if channel is None:
+        return jsonify({'error': 'Channel not found'}), 404
+    return jsonify({
+        'id': channel.id,
+        'name': channel.name,
+        'chat_id': channel.chat_id,
+        'bot_token': channel.bot_token
+    })
+
 @app.route('/api/statistics', methods=['GET'])
 def get_statistics():
     posts = Post.query.filter_by(status='sent').all()
